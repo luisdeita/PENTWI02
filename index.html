@@ -20,6 +20,9 @@
 			.record-id:hover{
 				cursor: pointer;
 			}
+			#submit-success{
+				display:none;
+			}
 		</style>
 		
 	</head>
@@ -101,6 +104,7 @@
 						</ul>
 					</nav>
 					<div class="table-responsive">
+						<div class="alert alert-success" role="alert" id="submit-success">Record Updated successfully.</div>
 						<table class="table table-bordered table-hover" id="data-table">
 							<thead class="thead-dark">
 								<tr>
@@ -276,6 +280,7 @@
 							//update table with new values set in listJson
 							buildTable(currentPage);
 							$('#detailsModal').modal('hide');
+							$('#submit-success').show().fadeOut(5000);
 						}
 					}
 				});
