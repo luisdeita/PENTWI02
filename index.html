@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<!-- comments in english because i want-->
+		<title>Building Responsive UI with Bootstrap</title>
+		
+		<!--JS-->
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+		<script src="lib/js/bootstrap.min.js"></script>
+		<!--<script src="lib/js/data-list.js"></script>-->
+		
+		<!--CSS-->
+		<link rel="stylesheet" href="lib/css/bootstrap.min.css"></link>
+		<link rel="stylesheet" href="lib/css/bootstrap-grid.min.css"></link>
+		<style type="text/css">
+			.record-id{
+				text-decoration:underline;
+			}
+			.record-id:hover{
+				cursor: pointer;
+			}
+		</style>
+		
+	</head>
+	<body>
+		<!-- Modal -->
+		<div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="detailsModalLabel">Vehicle Details</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form id="update-record-form">
+							<div class="alert alert-danger d-none" role="alert" id="submit-error"></div>
+							<ul class="list-group">
+								<input type="hidden" id="selected-key"/>
+								<input type="hidden" id="selected-id"/>
+								<li class="list-group-item" id="details-id">
+									#:
+								</li>
+								<li class="list-group-item" id="details-active">
+									<label>Available: </label>
+									<div id="record-available"></div>
+									<input type="hidden" id="record-is-active" value=""/>
+									<button type="button" class="btn btn-outline-success" id="record-is-available">Available</button>
+									<button type="button" class="btn btn-outline-danger" id="record-not-available">Not Available</button>
+								</li>
+								<li class="list-group-item">
+									<label>Car model: </label>
+									<input class="form-control" type="text" id="details-car-model" value="" required/>
+								</li>
+								<li class="list-group-item">
+									<label>Car make: </label>
+									<input class="form-control" type="text" id="details-car-make" value="" required/>
+								</li>
+								<li class="list-group-item">
+									<label>Model Year: </label>
+									<input class="form-control" type="text" id="details-model-year" value="" required/>
+								</li>
+								<li class="list-group-item">
+									<label>Color: </label>
+									<input class="form-control" type="text" id="details-color" value="" required/>
+								</li>
+								<li class="list-group-item">
+									<label>Quantity: </label>
+									<input class="form-control" type="text" id="details-quantity" value="" required/>
+								</li>
+							</ul>
+						</form>
+				  </div>
+				  <div class="modal-footer">
+					<button type="button" class="btn btn-primary" id="update-record">Save changes</button>
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+				  </div>
+				</div>
+			</div>
+		</div>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-10 col-sm-12 offset-md-1">
+					<section>
+						<div class="jumbotron jumbotron-fluid">
+							<div class="container">
+								<h1 class="display-4">PENTWI02 - Building Responsive UI with Bootstrap</h1>
+								<h1 class="display-6">Luis Gustavo De Ita</h1>
+							</div>
+						</div>
+					</section>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-10 col-sm-10 offset-md-1 offset-sm-1">
+					<h1 class="display-6">Vehicle List</h1>
+					<nav aria-label="Page navigation example">
+						<ul class="pagination">
+						</ul>
+					</nav>
+					<div class="table-responsive">
+						<table class="table table-bordered table-hover" id="data-table">
+							<thead class="thead-dark">
+								<tr>
+									<th scope="col"># (Click for details)</th>
+									<th scope="col">Available</th>
+									<th scope="col">Model</th>
+									<th scope="col">Make</th>
+									<th scope="col">Year</th>
+									<th scope="col">Color</th>
+									<th scope="col">Quantity</th>
+								</tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+		<script type="text/javascript">
+			$( document ).ready(function() {
+				var row = '';
+				var currentPage = 1;
+				var listJson = '';
+				$.ajax({
+					async: false,
+					url: "list.json",
+					success: function(data) {
+						listJson = data;
+					}
+				});
+				
+				//build table
+				buildPagination();
+				buildTable(currentPage);
+				
+				function buildPagination(){
+					var total = listJson.length;
+					var pages = Math.round(total / 10);
+					var pagination = '';
+					
+					for(var i = 1; i<= pages; i++){
+						pagination += '<li class="page-item '+(currentPage == i ? 'active':'')+'"><a class="page-link" href="#" data-page='+i+'>'+i+'</a></li>';
+					}
+					$('.pagination').append(pagination);
+				}
+				
+				$('.page-link').click(function(){
+					$('li.page-item').removeClass('active');
+					$(this).parent().addClass('active');
+					currentPage = $(this).data('page');
+					
+					buildTable(currentPage);
+				});
+				
+				/*
+				**Builds table using listJson variable
+				*/
+				function buildTable(currentPage){
+					$('#data-table tbody').empty();
+
+					var start = (currentPage-1)*10;
+					var end = currentPage*10;
+					
+					var currentSet = listJson.slice(start,end);
+					
+					$.each(currentSet, function(key, value){
+						row += '<tr'+(value['available'] == false ? ' class="table-danger"':'')+'>';
+						row += '<th scope="row" data-id="'+value['id']+'" data-key="'+key+'" class="record-id">'+value['id']+'</th>';
+						row += '<th scope="row">'+(value['available'] == false ? 'No':'Yes')+'</th>';
+						row += '<th scope="row">'+value['car_model']+'</th>';
+						row += '<th scope="row">'+value['car_make']+'</th>';
+						row += '<th scope="row">'+value['car_model_year']+'</th>';
+						row += '<th scope="row">'+value['color']+'</th>';
+						row += '<th scope="row">'+value['quantity']+'</th>';
+						row += '<\/tr';
+						$('#data-table tbody').append(row);
+						row = '';
+					});
+				}
+				
+				//load record details into details section
+				$(document).on('click', '#data-table th.record-id',function(){
+					var selected = $(this).attr('data-id');
+					var foundIndex = '';
+					$.each(listJson, function(key, value){
+						if(value['id'] == selected){
+							foundIndex = key;
+							return;
+						}
+					});
+					var selectedRecord = listJson[foundIndex];
+					
+					$('#selected-key').val(foundIndex);
+					$('#selected-id').val(selected);
+					$('#details-id').text('#: '+selectedRecord['id']);
+					$('#record-available').html(selectedRecord['available'] == false ? '<span class="badge badge-danger">No</span>':'<span class="badge badge-success">Yes</span>');
+					if(selectedRecord['available'] == false){
+						$('#record-is-available').addClass('btn-outline-success').removeClass('btn-success');
+						$('#record-not-available').removeClass('btn-outline-danger').addClass('btn-danger');
+					}
+					else{
+						$('#record-not-available').addClass('btn-outline-danger').removeClass('btn-danger');
+						$('#record-is-available').removeClass('btn-outline-success').addClass('btn-success');
+					}
+					$('#details-car-model').val(selectedRecord['car_model']);
+					$('#details-car-make').val(selectedRecord['car_make']);
+					$('#details-model-year').val(selectedRecord['car_model_year']);
+					$('#details-color').val(selectedRecord['color']);
+					$('#details-quantity').val(selectedRecord['quantity']);
+					
+					$('#detailsModal').modal();
+				});
+				
+				//change available flag to true
+				$('#record-is-available').click(function(){
+					if($('#selected-key').val() == ''){
+						$('#submit-error').text('Please select a record first.').removeClass('d-none').fadeOut(8000);
+					}
+					else{
+						$('#record-is-active').val(1);
+						$('#record-not-available').addClass('btn-outline-danger').removeClass('btn-danger');
+						$('#record-is-available').removeClass('btn-outline-success').addClass('btn-success');
+						$('#record-available').html('<span class="badge badge-success">True</span>');
+					}
+				});
+				
+				//change available flag to false
+				$('#record-not-available').click(function(){
+					if($('#selected-key').val() == ''){
+						$('#submit-error').text('Please select a record first.').removeClass('d-none').fadeOut(8000);
+					}
+					else{
+						$('#record-is-active').val(0);
+						$('#record-is-available').addClass('btn-outline-success').removeClass('btn-success');
+						$('#record-not-available').removeClass('btn-outline-danger').addClass('btn-danger');
+						$('#record-available').html('<span class="badge badge-danger">False</span>');
+					}
+				});
+				
+				//update record with new information
+				$('#update-record').click(function(){
+					if($('#selected-key').val() == ''){
+						$('#submit-error').text('Please select a record before clicking update account information.').removeClass('d-none').fadeOut(8000);
+					}
+					else{
+						if($('#details-car-model').val() == '' || $('#details-car-make').val() == '' || $('#details-model-year').val() == '' || $('#details-color').val() == '' || $('#details-quantity').val() == ''){
+							$('#submit-error').text('One of the fields is empty.').removeClass('d-none').fadeOut(8000);
+						}
+						else{
+							listJson[$('#selected-key').val()]['car_model'] = $('#details-car-model').val();
+							listJson[$('#selected-key').val()]['car_make'] = $('#details-car-make').val();
+							listJson[$('#selected-key').val()]['car_model_year'] = $('#details-model-year').val();
+							listJson[$('#selected-key').val()]['color'] = $('#details-color').val();
+							listJson[$('#selected-key').val()]['quantity'] = $('#details-quantity').val();
+							
+							//update active status
+							if($('#record-is-active').val() != ''){
+								$('#record-available').html($('#record-is-active').val() == 0 ? '<span class="badge badge-danger">No</span>':'<span class="badge badge-success">Yes</span>');
+								if($('#record-is-active').val() == 1){
+									listJson[$('#selected-key').val()]['available'] = true;
+									$('#record-not-available').addClass('btn-outline-danger').removeClass('btn-danger');
+									$('#record-is-available').removeClass('btn-outline-success').addClass('btn-success');
+								}
+								else if($('#record-is-active').val() == 0){
+									listJson[$('#selected-key').val()]['available'] = false;
+									$('#record-is-available').addClass('btn-outline-success').removeClass('btn-success');
+									$('#record-not-available').removeClass('btn-outline-danger').addClass('btn-danger');
+								}
+							}
+							
+							//update table with new values set in listJson
+							buildTable(currentPage);
+							$('#detailsModal').modal('hide');
+						}
+					}
+				});
+				
+			});
+		
+		</script>
+	</body>
+	
+</html>
