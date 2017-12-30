@@ -20,7 +20,7 @@
 			.record-id:hover{
 				cursor: pointer;
 			}
-			#submit-success{
+			#submit-success,#submit-error{
 				display:none;
 			}
 		</style>
@@ -39,7 +39,7 @@
 					</div>
 					<div class="modal-body">
 						<form id="update-record-form">
-							<div class="alert alert-danger d-none" role="alert" id="submit-error"></div>
+							<div class="alert alert-danger" role="alert" id="submit-error"></div>
 							<ul class="list-group">
 								<input type="hidden" id="selected-key"/>
 								<input type="hidden" id="selected-id"/>
@@ -223,7 +223,7 @@
 				//change available flag to true
 				$('#record-is-available').click(function(){
 					if($('#selected-key').val() == ''){
-						$('#submit-error').text('Please select a record first.').removeClass('d-none').fadeOut(8000);
+						$('#submit-error').text('Please select a record first.').show().fadeOut(8000);
 					}
 					else{
 						$('#record-is-active').val(1);
@@ -236,7 +236,7 @@
 				//change available flag to false
 				$('#record-not-available').click(function(){
 					if($('#selected-key').val() == ''){
-						$('#submit-error').text('Please select a record first.').removeClass('d-none').fadeOut(8000);
+						$('#submit-error').text('Please select a record first.').show().fadeOut(8000);
 					}
 					else{
 						$('#record-is-active').val(0);
@@ -249,11 +249,11 @@
 				//update record with new information
 				$('#update-record').click(function(){
 					if($('#selected-key').val() == ''){
-						$('#submit-error').text('Please select a record before clicking update account information.').removeClass('d-none').fadeOut(8000);
+						$('#submit-error').text('Please select a record before clicking update account information.').show().fadeOut(8000);
 					}
 					else{
 						if($('#details-car-model').val() == '' || $('#details-car-make').val() == '' || $('#details-model-year').val() == '' || $('#details-color').val() == '' || $('#details-quantity').val() == ''){
-							$('#submit-error').text('One of the fields is empty.').removeClass('d-none').fadeOut(8000);
+							$('#submit-error').text('One of the fields is empty.').show().fadeOut(8000);
 						}
 						else{
 							listJson[$('#selected-key').val()]['car_model'] = $('#details-car-model').val();
